@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format2.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>intrinsic_sdk</name>
+  <version>0.0.1</version>
+  <description>
+    ROS Wrapper for the Intrinsic SDK
+  </description>
+
+  <maintainer email="mjcarroll@intrinsic.ai">Michael Carroll</maintainer>
+
+  <license>Intrinsic - See LICENSE</license>
+
+  <author email="mjcarroll@intrinsic.ai">Michael Carroll</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>grpc_vendor</depend>
+  <depend>eigen</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

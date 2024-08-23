@@ -1,0 +1,19 @@
+if(NOT DEFINED _INTRINSIC_SDK_PACKAGE_REGISTERED)
+  set(_INTRINSIC_SDK_PACKAGE_REGISTERED TRUE)
+
+  include(FetchContent)
+  FetchContent_Declare(
+    googleapis
+    GIT_REPOSITORY https://github.com/googleapis/googleapis
+    GIT_TAG        master
+  )
+  FetchContent_MakeAvailable(googleapis)
+endif()
+
+get_filename_component(@PROJECT_NAME@_SHARE_DIR "${@PROJECT_NAME@_DIR}" DIRECTORY)
+set(intrinsic_sdk_PROTO_DIR "${@PROJECT_NAME@_SHARE_DIR}/protos")
+set(intrinsic_sdk_DESCRIPTOR_DATABASE "${@PROJECT_NAME@_SHARE_DIR}/intrinsic_proto.desc")
+
+include("${intrinsic_sdk_DIR}/intrinsic_sdk_protobuf.cmake")
+include("${intrinsic_sdk_DIR}/intrinsic_sdk_skills.cmake")
+include("${intrinsic_sdk_DIR}/intrinsic_sdk_services.cmake")
