@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format2.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>grpc_vendor</name>
+  <version>1.65.0</version>
+  <description>
+    Wrapper around grpc.
+  </description>
+
+  <maintainer email="mjcarroll@intrinsc.ai">Michael Carroll</maintainer>
+
+  <license>Apache License 2.0</license>  <!-- The contents of this package and the upstream gRPC library are both Apache-2.0 -->
+
+  <author email="mjcarroll@intrinsic.ai">Michael Carroll</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_vendor_package</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
