@@ -1,0 +1,89 @@
+# Build up the service with these stages:
+#   - base (ros:jazzy + settings) ->
+#   - underlay (dependencies) ->
+#   - overlay (user code) ->
+#   - result (base + copied install folder of underlay and overlay)
+
+# base stage: ros:jazzy + configs
+FROM ros:jazzy AS base
+
+WORKDIR /opt/ros/underlay
+
+ENV ROS_HOME=/tmp
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+# underlay stage: base + dependencies built
+FROM base AS underlay
+
+ADD src/intrinsic_sdk_ros /opt/ros/underlay/src/intrinsic_sdk_ros
+
+RUN git clone https://github.com/eclipse-zenoh/zenoh-plugin-dds \
+    -b release-0.7.2-rc \
+    --recurse-submodules \
+    /opt/ros/underlay/src/zenoh-plugin-dds
+
+RUN . /opt/ros/jazzy/setup.sh \
+    && apt-get update \
+    && apt install -y clang-14 ros-jazzy-ament-cmake-vendor-package cargo \
+    && colcon build \
+        --continue-on-error \
+        --cmake-args -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 \
+        --event-handlers=console_direct+ \
+        --merge-install \
+        --packages-up-to intrinsic_sdk zenoh_bridge_dds
+
+# overlay stage: underlay + service code built
+FROM underlay AS overlay
+
+ARG SERVICE_PACKAGE
+ARG DEPENDENCIES
+
+RUN apt-get update \
+    && apt install -y clang-14 ros-jazzy-rmw-cyclonedds-cpp python3-protobuf ${DEPENDENCIES} \
+    && rm -rf /var/lib/apt/lists/*
+
+ADD src /opt/ros/overlay/src
+
+RUN . /opt/ros/jazzy/setup.sh \
+    && . /opt/ros/underlay/install/setup.sh \
+    && cd /opt/ros/overlay \
+    && colcon build \
+      --cmake-args -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 \
+      --event-handlers=console_direct+ \
+      --merge-install \
+      --packages-up-to=${SERVICE_PACKAGE} \
+      --packages-skip intrinsic_sdk zenoh_bridge_dds grpc_vendor
+
+# result stage: base + copied install folders from the overlay + service setup
+FROM base
+
+ARG SERVICE_PACKAGE
+ARG SERVICE_NAME
+ARG DEPENDENCIES
+
+RUN apt-get update \
+    && apt-get install -y ros-jazzy-rmw-cyclonedds-cpp python3-protobuf ${DEPENDENCIES} \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=overlay /opt/ros/underlay/install /opt/ros/underlay/install
+COPY --from=overlay /opt/ros/overlay/install /opt/ros/overlay/install
+
+RUN cp \
+        /opt/ros/overlay/install/share/${SERVICE_PACKAGE}/${SERVICE_NAME}/service_manifest.binarypb \
+        /service_manifest.binarypb \
+    && cp \
+        /opt/ros/overlay/install/share/${SERVICE_PACKAGE}/${SERVICE_NAME}/default_config.binarypb \
+        /default_config.binarypb \
+    && cp \
+        /opt/ros/overlay/install/share/${SERVICE_PACKAGE}/${SERVICE_NAME}/${SERVICE_NAME}_protos.desc \
+        /parameter-descriptor-set.proto.bin \
+    && sed --in-place \
+        --expression '$isource "/opt/ros/overlay/install/setup.bash"' \
+        /ros_entrypoint.sh
+
+# Build arguments are not substituted in the CMD command and hence we set environemnt variables
+# which can be substituted instead.
+ENV SERVICE_PACKAGE=${SERVICE_PACKAGE}
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+CMD exec /opt/ros/overlay/install/lib/${SERVICE_PACKAGE}/${SERVICE_NAME}_main
