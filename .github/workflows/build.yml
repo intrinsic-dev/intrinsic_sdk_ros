@@ -1,0 +1,21 @@
+name: Build Intrinsic SDK ROS package
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  jazzy:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:noble
+    steps:
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # 4.1.7
+    - uses: ros-tooling/setup-ros@a6ce30ecca1e5dcc10ae5e6a44fe2169115bf852  # 0.7.9
+      with:
+        required-ros-distributions: jazzy
+    - uses: ros-tooling/action-ros-ci@0c87ffc035492b66c9afb9159ca9664fb0b513e1  # 0.3.14
+      with:
+        package-name: intrinsic_sdk
+        target-ros2-distro: jazzy
