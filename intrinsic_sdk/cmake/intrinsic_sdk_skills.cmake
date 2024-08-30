@@ -6,8 +6,7 @@ macro(intrinsic_sdk_generate_skill_config)
   cmake_parse_arguments(GENERATE_ARGS "${options}" "${oneValueArgs}"
                           "${multiValueArgs}" ${ARGN})
 
-  set(OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${GENERATE_ARGS_SKILL_NAME})
-  file(MAKE_DIRECTORY ${OUT_DIR})
+  set(OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
   add_custom_command(
     OUTPUT ${OUT_DIR}/${GENERATE_ARGS_SKILL_NAME}_manifest.pbbin
@@ -44,12 +43,12 @@ endmacro()
 
 macro(intrinsic_sdk_generate_skill)
   set(options)
-  set(oneValueArgs SKILL_NAME MANIFEST)
+  set(oneValueArgs SKILL_NAME MANIFEST PROTOS_TARGET)
   set(multiValueArgs SOURCES)
 
   cmake_parse_arguments(GENERATE_ARGS "${options}" "${oneValueArgs}"
                           "${multiValueArgs}" ${ARGN})
 
-  intrinsic_sdk_protobuf_generate(NAME ${GENERATE_ARGS_SKILL_NAME} SOURCES ${GENERATE_ARGS_SOURCES})
+  intrinsic_sdk_protobuf_generate(NAME ${GENERATE_ARGS_SKILL_NAME} SOURCES ${GENERATE_ARGS_SOURCES} TARGET ${GENERATE_ARGS_PROTOS_TARGET})
   intrinsic_sdk_generate_skill_config(SKILL_NAME ${GENERATE_ARGS_SKILL_NAME} MANIFEST ${GENERATE_ARGS_MANIFEST})
 endmacro()
