@@ -1,16 +1,12 @@
 macro(intrinsic_sdk_protobuf_generate)
   set(options)
-  set(oneValueArgs NAME)
+  set(oneValueArgs NAME TARGET)
   set(multiValueArgs IMPORT_DIRS SOURCES)
 
   cmake_parse_arguments(GENERATE_ARGS "${options}" "${oneValueArgs}"
                           "${multiValueArgs}" ${ARGN})
 
-  set(GENERATE_ARGS_TARGET ${GENERATE_ARGS_NAME}_protos)
-
-  set(OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${GENERATE_ARGS_NAME})
-
-  file(MAKE_DIRECTORY ${OUT_DIR})
+  set(OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
   if(GENERATE_ARGS_IMPORT_DIRS)
     set(IMPORT_DIRS ${GENERATE_ARGS_IMPORT_DIRS})
@@ -34,7 +30,7 @@ macro(intrinsic_sdk_protobuf_generate)
   target_include_directories(${GENERATE_ARGS_TARGET}
     PUBLIC
     ${OUT_DIR})
-  target_link_libraries(${GENERATE_ARGS_TARGET} PUBLIC absl::cordz_functions protobuf::libprotobuf intrinsic_sdk::intrinsic_sdk)
+  target_link_libraries(${GENERATE_ARGS_TARGET} PUBLIC absl::cordz_functions absl::log_internal_check_op protobuf::libprotobuf intrinsic_sdk::intrinsic_sdk)
 
   set(PROTOC_ARGS "")
 

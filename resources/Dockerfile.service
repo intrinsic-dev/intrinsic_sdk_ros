@@ -30,7 +30,13 @@ RUN . /opt/ros/jazzy/setup.sh \
         --cmake-args -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 \
         --event-handlers=console_direct+ \
         --merge-install \
-        --packages-up-to intrinsic_sdk zenoh_bridge_dds
+        --packages-up-to zenoh_bridge_dds \
+    && colcon build \
+        --continue-on-error \
+        --event-handlers=console_direct+ \
+        --merge-install \
+        --packages-up-to intrinsic_sdk \
+        --packages-skip zenoh_bridge_dds
 
 # overlay stage: underlay + service code built
 FROM underlay AS overlay
@@ -39,7 +45,7 @@ ARG SERVICE_PACKAGE
 ARG DEPENDENCIES
 
 RUN apt-get update \
-    && apt install -y clang-14 ros-jazzy-rmw-cyclonedds-cpp python3-protobuf ${DEPENDENCIES} \
+    && apt install -y ros-jazzy-rmw-cyclonedds-cpp python3-protobuf ${DEPENDENCIES} \
     && rm -rf /var/lib/apt/lists/*
 
 ADD src /opt/ros/overlay/src
@@ -48,7 +54,6 @@ RUN . /opt/ros/jazzy/setup.sh \
     && . /opt/ros/underlay/install/setup.sh \
     && cd /opt/ros/overlay \
     && colcon build \
-      --cmake-args -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 \
       --event-handlers=console_direct+ \
       --merge-install \
       --packages-up-to=${SERVICE_PACKAGE} \

@@ -16,6 +16,7 @@
   <author email="mjcarroll@intrinsic.ai">Michael Carroll</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_export_depend>python3-protobuf</buildtool_export_depend>
 
   <depend>grpc_vendor</depend>
   <depend>eigen</depend>
