@@ -20,6 +20,8 @@
   <depend>grpc_vendor</depend>
   <depend>eigen</depend>
 
+  <buildtool_export_depend>python3-protobuf</buildtool_export_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
