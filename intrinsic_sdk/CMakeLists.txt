@@ -277,6 +277,11 @@ install(
 )
 
 install(
+  FILES cmake/skill_main.cpp.in
+  DESTINATION share/${PROJECT_NAME}/templates
+)
+
+install(
   DIRECTORY "${CMAKE_SOURCE_DIR}/sdk/intrinsic"
   DESTINATION "include/${PROJECT_NAME}"
   FILES_MATCHING

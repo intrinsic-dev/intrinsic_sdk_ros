@@ -52,3 +52,14 @@ macro(intrinsic_sdk_generate_skill)
   intrinsic_sdk_protobuf_generate(NAME ${GENERATE_ARGS_SKILL_NAME} SOURCES ${GENERATE_ARGS_SOURCES} TARGET ${GENERATE_ARGS_PROTOS_TARGET})
   intrinsic_sdk_generate_skill_config(SKILL_NAME ${GENERATE_ARGS_SKILL_NAME} MANIFEST ${GENERATE_ARGS_MANIFEST})
 endmacro()
+
+macro(intrinsic_sdk_skill_main)
+  set(options)
+  set(oneValueArgs SKILL_NAME CREATE_SKILL_FUNCTION CREATE_SKILL_HEADER MAIN_FILE)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(GENERATE_SKILL_MAIN "${options}" "${oneValueArgs}"
+                        "${multiValueArgs}" ${ARGN})
+
+  configure_file(${intrinsic_sdk_DIR}/../templates/skill_main.cpp.in ${GENERATE_SKILL_MAIN_MAIN_FILE})
+endmacro()
