@@ -1,39 +1,5 @@
-# base stage: ros:jazzy + configs
-FROM ros:jazzy AS base
-
-WORKDIR /opt/ros/underlay
-
-ENV ROS_HOME=/tmp
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-# underlay stage: base + dependencies built
-FROM base AS underlay
-
-ADD src/intrinsic_sdk_ros /opt/ros/underlay/src/intrinsic_sdk_ros
-
-RUN git clone https://github.com/eclipse-zenoh/zenoh-plugin-dds \
-    -b release-0.7.2-rc \
-    --recurse-submodules \
-    /opt/ros/underlay/src/zenoh-plugin-dds
-
-RUN . /opt/ros/jazzy/setup.sh \
-    && apt-get update \
-    && apt install -y clang-14 ros-jazzy-ament-cmake-vendor-package cargo \
-    && colcon build \
-        --continue-on-error \
-        --cmake-args -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 \
-        --event-handlers=console_direct+ \
-        --merge-install \
-        --packages-up-to zenoh_bridge_dds \
-    && colcon build \
-        --continue-on-error \
-        --event-handlers=console_direct+ \
-        --merge-install \
-        --packages-up-to intrinsic_sdk \
-        --packages-skip zenoh_bridge_dds
-
 # overlay stage: underlay + service code built
-FROM underlay AS overlay
+FROM ghcr.io/mjcarroll/flowstate_ros_base:latest AS overlay
 
 ARG SKILL_PACKAGE
 ARG DEPENDENCIES
@@ -53,9 +19,8 @@ RUN . /opt/ros/jazzy/setup.sh \
       --packages-up-to=${SKILL_PACKAGE} \
       --packages-skip intrinsic_sdk zenoh_bridge_dds grpc_vendor
 
-
 # result stage: base + copied install folders from the overlay + skill setup
-FROM base
+FROM ros:jazzy
 
 ARG SKILL_PACKAGE
 ARG SKILL_NAME
@@ -73,7 +38,10 @@ RUN mkdir /skills \
     && sed --in-place --expression '$isource "/opt/ros/overlay/install/setup.bash"' /ros_entrypoint.sh \
     && sed --in-place --expression '5 a/opt/ros/underlay/install/lib/zenoh_bridge_dds/zenoh_bridge_dds -m client -e tcp/zenoh-router.app-intrinsic-base:7447 --no-multicast-scouting &' /ros_entrypoint.sh
 
-LABEL "ai.intrinsic.asset-id"="ai.intrinsic.${SKILL_PACKAGE}.${SKILL_NAME}"
+LABEL "ai.intrinsic.asset-id"="ai.intrinsic.${SKILL_NAME}"
 LABEL "ai.intrinsic.skill-image-name"="${SKILL_NAME}_ros_image"
+
+ENV ROS_HOME=/tmp
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 CMD ["/skills/skill_service", "--skill_service_config_filename=/skills/skill_service_config.proto.bin"]

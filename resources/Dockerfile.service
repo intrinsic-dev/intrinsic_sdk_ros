@@ -1,45 +1,8 @@
-# Build up the service with these stages:
-#   - base (ros:jazzy + settings) ->
-#   - underlay (dependencies) ->
-#   - overlay (user code) ->
-#   - result (base + copied install folder of underlay and overlay)
-
-# base stage: ros:jazzy + configs
-FROM ros:jazzy AS base
-
-WORKDIR /opt/ros/underlay
+# overlay stage: underlay + service code built
+FROM ghcr.io/mjcarroll/flowstate_ros_base:latest AS overlay
 
 ENV ROS_HOME=/tmp
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-# underlay stage: base + dependencies built
-FROM base AS underlay
-
-ADD src/intrinsic_sdk_ros /opt/ros/underlay/src/intrinsic_sdk_ros
-
-RUN git clone https://github.com/eclipse-zenoh/zenoh-plugin-dds \
-    -b release-0.7.2-rc \
-    --recurse-submodules \
-    /opt/ros/underlay/src/zenoh-plugin-dds
-
-RUN . /opt/ros/jazzy/setup.sh \
-    && apt-get update \
-    && apt install -y clang-14 ros-jazzy-ament-cmake-vendor-package cargo \
-    && colcon build \
-        --continue-on-error \
-        --cmake-args -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 \
-        --event-handlers=console_direct+ \
-        --merge-install \
-        --packages-up-to zenoh_bridge_dds \
-    && colcon build \
-        --continue-on-error \
-        --event-handlers=console_direct+ \
-        --merge-install \
-        --packages-up-to intrinsic_sdk \
-        --packages-skip zenoh_bridge_dds
-
-# overlay stage: underlay + service code built
-FROM underlay AS overlay
 
 ARG SERVICE_PACKAGE
 ARG DEPENDENCIES
@@ -60,7 +23,7 @@ RUN . /opt/ros/jazzy/setup.sh \
       --packages-skip intrinsic_sdk zenoh_bridge_dds grpc_vendor
 
 # result stage: base + copied install folders from the overlay + service setup
-FROM base
+FROM ros:jazzy as base
 
 ARG SERVICE_PACKAGE
 ARG SERVICE_NAME
