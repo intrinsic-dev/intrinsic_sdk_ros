@@ -50,13 +50,14 @@ RUN \
     colcon build \
         --packages-above resource_retriever resource_retriever_msgs rviz_common rviz_default_plugins rviz_rendering \
         --event-handlers console_direct+ \
-        --install-base /opt/ros/underlay \
+        --install-base /opt/ros/jazzy \
         --merge-install \
         --cmake-args \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DBUILD_TESTING:BOOL=OFF && \
     cd .. && \
     rm -rf temp_ws && \
+    apt-get install --reinstall ros-jazzy-ros-workspace && \
     rm -rf /var/lib/apt/lists/*
 
 # Ensure some additional dependencies are installed.
