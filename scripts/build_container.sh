@@ -35,6 +35,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --dependencies)
+      DEPENDENCIES="$2"
+      shift # past argument
+      shift # past value
+      ;;
     -*|--*)
       echo "Unknown option $1"
       exit 1
@@ -60,7 +65,8 @@ if [[ -n "$SERVICE_NAME" && -n "$SERVICE_PACKAGE" ]]; then
       --file $SCRIPT_DIR/../resources/Dockerfile.service \
       --build-arg="SERVICE_PACKAGE=$SERVICE_PACKAGE" \
       --build-arg="SERVICE_NAME=$SERVICE_NAME" \
-      --build-arg="SERVICE_EXECUTABLE_NAME=${SERVICE_NAME}_main"\
+      --build-arg="SERVICE_EXECUTABLE_NAME=${SERVICE_NAME}_main" \
+      --build-arg="DEPENDENCIES=${DEPENDENCIES}" \
       .
 elif [[ -n "$SKILL_NAME" && -n "$SKILL_PACKAGE" ]]; then
   mkdir -p $IMAGES_DIR/$SKILL_NAME

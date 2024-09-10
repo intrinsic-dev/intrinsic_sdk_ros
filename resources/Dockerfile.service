@@ -29,6 +29,7 @@ ARG SERVICE_PACKAGE
 ARG SERVICE_NAME
 ARG DEPENDENCIES
 
+
 RUN apt-get update \
     && apt-get install -y ros-jazzy-rmw-cyclonedds-cpp python3-protobuf ${DEPENDENCIES} \
     && rm -rf /var/lib/apt/lists/*
@@ -48,6 +49,9 @@ RUN cp \
     && sed --in-place \
         --expression '$isource "/opt/ros/overlay/install/setup.bash"' \
         /ros_entrypoint.sh
+
+ENV ROS_HOME=/tmp
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Build arguments are not substituted in the CMD command and hence we set environemnt variables
 # which can be substituted instead.
