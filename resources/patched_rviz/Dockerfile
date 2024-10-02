@@ -66,6 +66,25 @@ RUN \
     apt-get install -y ros-jazzy-cv-bridge && \
     rm -rf /var/lib/apt/lists/*
 
+# Setup ROS workspace for use with the intrinsic_sdk_ros in it and built.
+RUN mkdir -p /opt/ws_fs_ros/src/intrinsic_sdk_ros
+ADD grpc_vendor /opt/ws_fs_ros/src/intrinsic_sdk_ros/grpc_vendor
+ADD intrinsic_sdk /opt/ws_fs_ros/src/intrinsic_sdk_ros/intrinsic_sdk
+RUN \
+    cd /opt/ws_fs_ros && \
+    apt-get update && \
+    . /opt/ros/jazzy/setup.sh && \
+    rosdep update && \
+    rosdep install --from-paths ./src --ignore-src --rosdistro jazzy -y && \
+    colcon build \
+        --event-handlers console_direct+ \
+        --merge-install \
+        --cmake-args \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING:BOOL=OFF && \
+    rm -rf /var/lib/apt/lists/*
+RUN chmod -R 777 /opt/ws_fs_ros
+
 # Modify the entrypoint script to run the zenoh dds bridge in the background and source the underlay.
 RUN \
     sed --in-place \
