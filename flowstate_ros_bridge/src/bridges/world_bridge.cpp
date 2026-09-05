@@ -66,7 +66,7 @@ void WorldBridge::declare_ros_parameters(
       rclcpp::ParameterValue(std::vector<std::string>{}));
   param_interface->declare_parameter(
       kMeshUrlPrefixParamName,
-      rclcpp::ParameterValue{"http://localhost:8123/"});
+      rclcpp::ParameterValue{"service:///flowstate_get_resource:/"});
   param_interface->declare_parameter(kEnableRobotJointStateTopicParamName,
                                      rclcpp::ParameterValue(true));
   param_interface->declare_parameter(kEnableForceTorqueTopicParamName,

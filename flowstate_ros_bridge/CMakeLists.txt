@@ -39,6 +39,7 @@ set(dep_pkgs
   rclcpp_components
   rclcpp_lifecycle
   rclpy
+  resource_retriever_interfaces
   tf2_ros
 )
 foreach(pkg ${dep_pkgs})
@@ -64,6 +65,7 @@ target_link_libraries(executive
   intrinsic_sdk_cmake::intrinsic_sdk_cmake
   nlohmann_json::nlohmann_json
   ${flowstate_interfaces_TARGETS}
+  ${resource_retriever_interfaces_TARGETS}
 )
 
 # create shared library for world.
@@ -83,6 +85,7 @@ target_link_libraries(world
   intrinsic_sdk_cmake::intrinsic_sdk_cmake
   nlohmann_json::nlohmann_json
   ${flowstate_interfaces_TARGETS}
+  ${resource_retriever_interfaces_TARGETS}
 )
 
 ament_export_targets(executive HAS_LIBRARY_TARGET)
@@ -129,6 +132,7 @@ target_link_libraries(flowstate_ros_builtin_bridges
     absl::strings
     absl::log
     pluginlib::pluginlib
+    ${resource_retriever_interfaces_TARGETS}
     ${sensor_msgs_TARGETS}
     ${std_msgs_TARGETS}
     ${std_srvs_TARGETS}
@@ -228,11 +232,6 @@ install(TARGETS
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/${SERVICE_NAME}_protos.desc
   DESTINATION share/${PROJECT_NAME}
-)
-
-install(PROGRAMS
-  scripts/rviz_http_proxy
-  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
