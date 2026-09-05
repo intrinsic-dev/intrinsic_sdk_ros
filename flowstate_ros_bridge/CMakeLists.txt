@@ -65,6 +65,7 @@ target_link_libraries(executive
   intrinsic_sdk_cmake::intrinsic_sdk_cmake
   nlohmann_json::nlohmann_json
   ${flowstate_interfaces_TARGETS}
+  ${resource_retriever_interfaces_TARGETS}
 )
 
 # create shared library for world.
@@ -84,6 +85,7 @@ target_link_libraries(world
   intrinsic_sdk_cmake::intrinsic_sdk_cmake
   nlohmann_json::nlohmann_json
   ${flowstate_interfaces_TARGETS}
+  ${resource_retriever_interfaces_TARGETS}
 )
 
 ament_export_targets(executive HAS_LIBRARY_TARGET)
