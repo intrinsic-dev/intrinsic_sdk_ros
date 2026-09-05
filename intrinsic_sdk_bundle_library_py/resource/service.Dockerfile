@@ -47,6 +47,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && apt-get update \
     && rosdep update \
     && rosdep install --from-paths src --ignore-src -r -y \
+    && (ln -sf /usr/lib/x86_64-linux-gnu/libxml2.so.16 /usr/lib/x86_64-linux-gnu/libxml2.so.2 || true ) \
     && apt install -y ros-${ROS_DISTRO}-ament-cmake-vendor-package \
     && colcon build \
         --continue-on-error \
@@ -89,7 +90,7 @@ ARG DEPENDENCIES
 
 ARG ROS_DISTRO=jazzy
 RUN apt-get update \
-    && apt-get install -y ros-${ROS_DISTRO}-rmw-zenoh-cpp \
+    && apt-get install -y ros-${ROS_DISTRO}-rmw-zenoh-cpp ${DEPENDENCIES} \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=overlay /opt/ros/underlay/install /opt/ros/underlay/install
