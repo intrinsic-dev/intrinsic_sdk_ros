@@ -12,7 +12,7 @@ jobs:
   build-container-images:
     uses: ./.github/workflows/build_container_images.yaml
   test-container-images:
-    runs-on: ubuntu-24.04-8core
+    runs-on: ubuntu-26.04-8core
     needs: [build-container-images]
     outputs:
       intrinsic_ai_sdk_version: ${{ needs.build-container-images.outputs.intrinsic_ai_sdk_version }}

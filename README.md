@@ -6,7 +6,7 @@ to write ROS-based workflows that work with
 [Flowstate](https://intrinsic.ai/flowstate), a web-based tool to build robot
 solutions from concept to deployment.
 
-The Intrinsic SDK for ROS is compatible with [ROS 2 Jazzy Jalisco](https://docs.ros.org/en/jazzy/index.html).
+The Intrinsic SDK for ROS is compatible with [ROS 2 Lyrical Luth](https://docs.ros.org/en/lyrical/index.html).
 
 In addition to this [Intrinsic SDK for
 ROS repository](https://github.com/intrinsic-dev/intrinsic_sdk_ros), there are
@@ -28,7 +28,7 @@ git clone https://github.com/intrinsic-ai/sdk-ros.git
 Source ROS and build the SDK.
 
 ```bash
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/lyrical/setup.bash
 cd ~/intrinsic_ws/
 rosdep install -iry --from-paths src
 colcon build \
