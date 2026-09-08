@@ -13,12 +13,12 @@ concurrency:
   # workflow matters, as it overwrites the latest tag of the container images.
   cancel-in-progress: true
 env:
-  ROS_DISTRO: jazzy
+  ROS_DISTRO: lyrical
 jobs:
   build-test:
     uses: ./.github/workflows/test_container_images.yaml
   push:
-    runs-on: ubuntu-24.04-8core
+    runs-on: ubuntu-26.04-8core
     needs: [build-test]
     permissions:
       contents: read

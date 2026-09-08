@@ -8,7 +8,7 @@ on:
         value: ${{ jobs.build-container-images.outputs.intrinsic_ai_sdk_version }}
 jobs:
   build-container-images:
-    runs-on: ubuntu-24.04-8core
+    runs-on: ubuntu-26.04-8core
     services:
       # This local container registry is used to temporarily hold intermediate
       # docker images until they can be tested without pushing to the remote

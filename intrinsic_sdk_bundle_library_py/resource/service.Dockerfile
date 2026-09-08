@@ -13,14 +13,14 @@
 # limitations under the License.
 
 # Build up the service with these stages:
-#   - base (ros:jazzy + settings) ->
+#   - base (ros:lyrical + settings) ->
 #   - underlay (dependencies) ->
 #   - overlay (user code) ->
 #   - result (base + copied install folder of underlay and overlay)
 
-ARG ROS_DISTRO=jazzy
+ARG ROS_DISTRO=lyrical
 
-# base stage: ros:jazzy + configs
+# base stage: ros:lyrical + configs
 FROM ros:${ROS_DISTRO} AS base
 
 WORKDIR /opt/ros/underlay
@@ -47,7 +47,8 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && apt-get update \
     && rosdep update \
     && rosdep install --from-paths src --ignore-src -r -y \
-    && apt install -y ros-${ROS_DISTRO}-ament-cmake-vendor-package \
+    && (ln -sf /usr/lib/x86_64-linux-gnu/libxml2.so.16 /usr/lib/x86_64-linux-gnu/libxml2.so.2 || true ) \
+    && apt install -y ros-${ROS_DISTRO}-ament-cmake-vendor-package libxml2-dev \
     && colcon build \
         --continue-on-error \
         --cmake-args -DCMAKE_BUILD_TYPE=Release \
@@ -61,9 +62,9 @@ FROM underlay AS overlay
 ARG SERVICE_PACKAGE
 ARG DEPENDENCIES
 
-ARG ROS_DISTRO=jazzy
+ARG ROS_DISTRO=lyrical
 RUN apt-get update \
-    && apt install -y ros-${ROS_DISTRO}-rmw-zenoh-cpp python3-protobuf ${DEPENDENCIES} \
+    && apt install -y ros-${ROS_DISTRO}-rmw-zenoh-cpp python3-protobuf libxml2-dev ${DEPENDENCIES} \
     && rm -rf /var/lib/apt/lists/*
 
 ARG OVERLAY_SOURCE=src
@@ -87,9 +88,9 @@ ARG SERVICE_PACKAGE
 ARG SERVICE_NAME
 ARG DEPENDENCIES
 
-ARG ROS_DISTRO=jazzy
+ARG ROS_DISTRO=lyrical
 RUN apt-get update \
-    && apt-get install -y ros-${ROS_DISTRO}-rmw-zenoh-cpp \
+    && apt-get install -y ros-${ROS_DISTRO}-rmw-zenoh-cpp libxml2-dev ${DEPENDENCIES} \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=overlay /opt/ros/underlay/install /opt/ros/underlay/install
