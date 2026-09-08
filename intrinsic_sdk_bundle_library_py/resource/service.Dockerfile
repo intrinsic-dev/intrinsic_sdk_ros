@@ -47,7 +47,8 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && apt-get update \
     && rosdep update \
     && rosdep install --from-paths src --ignore-src -r -y \
-    && apt install -y ros-${ROS_DISTRO}-ament-cmake-vendor-package \
+    && apt install -y ros-${ROS_DISTRO}-ament-cmake-vendor-package libxml2-dev \
+    && (test -f /usr/lib/x86_64-linux-gnu/libxml2.so.2 || ln -sf /usr/lib/x86_64-linux-gnu/libxml2.so /usr/lib/x86_64-linux-gnu/libxml2.so.2 || true) \
     && colcon build \
         --continue-on-error \
         --cmake-args -DCMAKE_BUILD_TYPE=Release \

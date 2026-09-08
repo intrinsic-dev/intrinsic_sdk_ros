@@ -21,7 +21,21 @@ import subprocess
 import sys
 import urllib.request
 
-from ament_index_python.packages import get_package_share_directory
+def _get_resource_file(filename):
+    try:
+        from ament_index_python.packages import get_package_share_directory
+        share_dir = get_package_share_directory('intrinsic_sdk_bundle_library_py')
+        resource_path = os.path.join(share_dir, 'resource', filename)
+        if os.path.exists(resource_path):
+            return resource_path
+    except (ImportError, Exception):
+        pass
+    local_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'resource', filename)
+    )
+    if os.path.exists(local_path):
+        return local_path
+    return None
 
 # Shared argument definitions for command-line parser and colcon verb
 COMMON_ARGUMENTS = {
@@ -84,8 +98,10 @@ def run_command(cmd, check=True):
 
 
 def get_sdk_version():
-    share_dir = get_package_share_directory('intrinsic_sdk_bundle_library_py')
-    version_file = os.path.join(share_dir, 'resource', 'sdk_version.json')
+    version_file = _get_resource_file('sdk_version.json')
+    if not version_file or not os.path.exists(version_file):
+        print('Error: Could not find sdk_version.json')
+        return None
 
     try:
         with open(version_file, 'r') as f:
@@ -197,13 +213,11 @@ def build_container(args):
     if args.service_name and args.service_package:
         name = args.service_name
         package = args.service_package
-        share_dir = get_package_share_directory('intrinsic_sdk_bundle_library_py')
-        dockerfile = args.dockerfile or os.path.join(share_dir, 'resource', 'service.Dockerfile')
+        dockerfile = args.dockerfile or _get_resource_file('service.Dockerfile')
     elif args.skill_name and args.skill_package:
         name = args.skill_name
         package = args.skill_package
-        share_dir = get_package_share_directory('intrinsic_sdk_bundle_library_py')
-        dockerfile = args.dockerfile or os.path.join(share_dir, 'resource', 'skill.Dockerfile')
+        dockerfile = args.dockerfile or _get_resource_file('skill.Dockerfile')
     else:
         print('Error: Must specify either service or skill name and package.')
         return
@@ -322,12 +336,27 @@ def build_bundle(args):
         print(f'Error: Image tar not found at {tar_path}. Run build-container first.')
         return
 
-    # Load image (Podman)
-    run_command(['podman', 'load', '-i', tar_path])
+    # Load image (Podman with Docker fallback)
+    runtime = 'podman'
+    if not shutil.which('podman'):
+        runtime = 'docker'
+    else:
+        try:
+            run_command(['podman', 'load', '-i', tar_path])
+        except subprocess.CalledProcessError:
+            print('podman load failed, falling back to docker...')
+            runtime = 'docker'
+
+    if runtime == 'docker':
+        run_command(['docker', 'load', '-i', tar_path])
 
     # Extract descriptor
     container_name = f'temp_container_{name}'
-    run_command(['podman', 'create', '--replace', '--name', container_name, f'{package}:{name}'])
+    if runtime == 'podman':
+        run_command(['podman', 'create', '--replace', '--name', container_name, f'{package}:{name}'])
+    else:
+        subprocess.run(['docker', 'rm', '-f', container_name], capture_output=True)
+        run_command(['docker', 'create', '--name', container_name, f'{package}:{name}'])
 
     desc_path = os.path.join(bundle_dir, name, f'{name}_protos.desc')
     if args.service_name:
@@ -338,7 +367,7 @@ def build_bundle(args):
         success = False
         for src_path in paths_to_try:
             try:
-                run_command(['podman', 'cp', f'{container_name}:{src_path}', desc_path])
+                run_command([runtime, 'cp', f'{container_name}:{src_path}', desc_path])
                 success = True
                 break
             except subprocess.CalledProcessError:
@@ -352,9 +381,9 @@ def build_bundle(args):
 
     else:
         src_path = f'/opt/{name}_workspace/install/share/{package}/{name}_protos.desc'
-        run_command(['podman', 'cp', f'{container_name}:{src_path}', desc_path])
+        run_command([runtime, 'cp', f'{container_name}:{src_path}', desc_path])
 
-    run_command(['podman', 'rm', '-f', container_name])
+    run_command([runtime, 'rm', '-f', container_name])
 
     # Check if inbuild is in PATH or current directory
     inbuild_path = shutil.which('inbuild') or './inbuild'
